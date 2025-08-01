@@ -1,0 +1,44 @@
+name: Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      migrate_data:
+        description: 'Migrate database schema and data'
+        required: true
+        default: 'false'
+        type: boolean
+
+env:
+  AWS_REGION: ap-southeast-1
+
+jobs:
+  migrate-database:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.migrate_data == 'true' }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Install MySQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mysql-client
+        
+    - name: Run database migration
+      run: |
+        echo "Running database migration..."
+        mysql -h ${{ secrets.RDS_ENDPOINT }} -u admin -p${{ secrets.RDS_PASSWORD }} < scripts/database-migration.sql
+        echo "Database migration completed!"
+        
+    - name: Verify migration
+      run: |
+        echo "Verifying database tables..."
+        mysql -h ${{ secrets.RDS_ENDPOINT }} -u admin -p${{ secrets.RDS_PASSWORD }} -e "USE carrentalweb; SHOW TABLES;" 
