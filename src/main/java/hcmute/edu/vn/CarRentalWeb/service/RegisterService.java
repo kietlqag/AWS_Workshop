@@ -96,8 +96,10 @@ public class RegisterService {
             message.setSubject("Xác minh đăng ký - Mã OTP");
             message.setText("Mã OTP của bạn là: " + otp + ". OTP có hiệu lực trong 5 phút.");
             mailSender.send(message);
+            System.out.println("✅ Gửi email thành công đến: " + toEmail);
         } catch (Exception e) {
-            System.out.println("Gửi email thất bại: " + e.getMessage());
+            System.out.println("❌ Gửi email thất bại: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
